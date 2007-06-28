@@ -9,6 +9,7 @@ from hurry.workflow.interfaces import IWorkflowInfo
 
 from interfaces import IAuthorizeNetOptions
 
+# XXX need to get the correct transition mappings here
 _reason_to_transition = {
     "approved": "",
     "error": "",
@@ -41,10 +42,13 @@ class AuthorizeNetAdapter(object):
         # - declined
         # - held for review
         #
-        # result.response_reason
-        # result.approval_code
-        # result.trans_id
+        # Other result fields:
+        #   result.response_reason
+        #   result.approval_code
+        #   result.trans_id
         reason = result.response_reason
         info = getAdapter(order, IWorkflowInfo, "getpaid.finance.info")
+        # XXX the response_reason should go into the order instead of the
+        # XXX workflow once the order supports that
         info.fireTransition(_reason_to_transition[reason],
                             comment=result.response_reason)
