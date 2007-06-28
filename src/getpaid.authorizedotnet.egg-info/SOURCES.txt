@@ -9,4 +9,5 @@ src/getpaid.authorizedotnet.egg-info/requires.txt
 src/getpaid.authorizedotnet.egg-info/top_level.txt
 src/getpaid/authorizedotnet/__init__.py
 src/getpaid/authorizedotnet/authorizenet.py
+src/getpaid/authorizedotnet/configure.zcml
 src/getpaid/authorizedotnet/interfaces.py

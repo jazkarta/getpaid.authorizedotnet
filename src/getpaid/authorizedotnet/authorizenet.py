@@ -1,41 +1,54 @@
 """
+$Id: $
 """
-from zope.component import getUtility, getAdapter
-from zc.authorizedotnet.processing import CcProcessor
-from decimal import Decimal
-from getpaid.core.interfaces import IPaymentProcessor
+
 from zope import interface
+from zope.component import getUtility, getAdapter
+
 from hurry.workflow.interfaces import IWorkflowInfo
+
+from getpaid.core.interfaces import IPaymentProcessor
+from zc.authorizedotnet.processing import CcProcessor
 
 from interfaces import IAuthorizeNetOptions
 
 # XXX need to get the correct transition mappings here
+
 _reason_to_transition = {
-    "approved": "",
-    "error": "",
-    "declined": "cancel-declined",
-    "held for review": "",
+    "approved": "authorize",
+    "error": "processor-cancelled",
+    "declined": "processor-cancelled",
     }
 
 class AuthorizeNetAdapter(object):
     interface.implements(IPaymentProcessor)
+
+    options_interface = IAuthorizeNetOptions
 
     def __init__(self, context):
         self.context = context
 
     def authorize(self, order, payment):
         options = IAuthorizeNetOptions(self.context)
+        
         cc = CcProcessor(server=options.server_url,
                          login=options.merchant_id,
                          key=options.merchant_key)
+
+        
         billing = order.billing_address
         amount = order.getTotalPrice()
 
-        result = cc.authorize(amount=str(amount),
-                              card_num=payment.credit_card,
-                              exp_date=payment.cc_expiration,
-                              address=billing.bill_first_line,
-                              zip=billing.bill_postal_code)
+        # TODO:  also send login id as x_cust_id
+        result = cc.authorize(
+            amount=str(amount),
+            card_num=payment.credit_card,
+            exp_date=payment.cc_expiration,
+            address=billing.bill_first_line,
+            city=billing.bill_city,
+            state=billing.bill_state,
+            zip=billing.bill_postal_code
+            )
         # result.response may be
         # - approved
         # - error
@@ -47,8 +60,12 @@ class AuthorizeNetAdapter(object):
         #   result.approval_code
         #   result.trans_id
         reason = result.response_reason
-        info = getAdapter(order, IWorkflowInfo, "getpaid.finance.info")
+        order.processor_order_id = result.trans_id
+        
         # XXX the response_reason should go into the order instead of the
-        # XXX workflow once the order supports that
-        info.fireTransition(_reason_to_transition[reason],
-                            comment=result.response_reason)
+        # XXX workflow once the order supportse that
+        transition = _reason_to_transition.get( reason )
+        if transition:
+            order.finance_workflow.fireTransition( transition,
+                                                   comment=result.response_reason)
+            
