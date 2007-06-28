@@ -29,7 +29,7 @@ class AuthorizeNetAdapter(object):
                          login=options.merchant_id,
                          key=options.merchant_key)
         billing = order.billing_address
-        amount = order.getTotalAmount()
+        amount = order.getTotalPrice()
 
         result = cc.authorize(amount=str(amount),
                               card_num=payment.credit_card,
