@@ -20,6 +20,11 @@ _reason_to_transition = {
     "declined": "processor-cancelled",
     }
 
+_sites = {
+    "Production": "secure.authorize.net:443",
+    "Sandbox": "test.authorize.net:443")
+
+
 class AuthorizeNetAdapter(object):
     interface.implements(IPaymentProcessor)
 
@@ -30,8 +35,9 @@ class AuthorizeNetAdapter(object):
 
     def authorize(self, order, payment):
         options = IAuthorizeNetOptions(self.context)
-        
-        cc = CcProcessor(server=options.server_url,
+
+        server = _sites.get(options.server_url)
+        cc = CcProcessor(server=options.server,
                          login=options.merchant_id,
                          key=options.merchant_key)
 
