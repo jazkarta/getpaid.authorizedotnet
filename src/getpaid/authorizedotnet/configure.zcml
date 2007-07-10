@@ -2,13 +2,13 @@
 	   xmlns:five="http://namespaces.zope.org/five">
 
   <adapter
-     for="Products.CMFCore.interfaces.ISiteRoot"
+     for="getpaid.core.interfaces.IStore"
      provides=".interfaces.IAuthorizeNetOptions"
      factory=".AuthorizeNetOptions"
      />
 
   <adapter
-     for="Products.CMFCore.interfaces.ISiteRoot"
+     for="getpaid.core.interfaces.IStore"
      provides="getpaid.core.interfaces.IPaymentProcessor"
      factory=".authorizenet.AuthorizeNetAdapter"
      name="Authorize.Net"

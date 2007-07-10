@@ -1,60 +1,57 @@
 """
+
+notes on error handling, if we haven't talked to the processor then raise an exception,
+else return an error message so higher levels can interpret/record/notify user/etc.
+
 $Id: $
 """
 
 from zope import interface
 from zope.component import getUtility, getAdapter
+from zope.app.annotation.interfaces import IAnnotations
 
-from hurry.workflow.interfaces import IWorkflowInfo
-
-from getpaid.core.interfaces import IPaymentProcessor
 from zc.authorizedotnet.processing import CcProcessor
+from getpaid.core.interfaces import IPaymentProcessor
 
 from interfaces import IAuthorizeNetOptions
 
-# XXX need to get the correct transition mappings here
+SUCCESS = 'approved'
 
-_reason_to_transition = {
-    "approved": "authorize",
-    "error": "processor-cancelled",
-    "declined": "processor-cancelled",
-    }
+# needed for refunds
+LAST_FOUR = "getpaid.authorizedotnet.cc_last_four"
 
-_sites = {
-    "Production": "secure.authorize.net:443",
-    "Sandbox": "test.authorize.net:443")
-
+APPROVAL_KEY = "getpaid.authorizedotnet.approval_code"
 
 class AuthorizeNetAdapter(object):
     interface.implements(IPaymentProcessor)
 
     options_interface = IAuthorizeNetOptions
 
+    _sites = dict(
+        Production = "secure.authorize.net:443",
+        Sandbox = "test.authorize.net:443"
+        )
+
     def __init__(self, context):
         self.context = context
 
     def authorize(self, order, payment):
-        options = IAuthorizeNetOptions(self.context)
 
-        server = _sites.get(options.server_url)
-        cc = CcProcessor(server=options.server,
-                         login=options.merchant_id,
-                         key=options.merchant_key)
-
-        
         billing = order.billing_address
         amount = order.getTotalPrice()
 
-        # TODO:  also send login id as x_cust_id
-        result = cc.authorize(
-            amount=str(amount),
-            card_num=payment.credit_card,
-            exp_date=payment.cc_expiration,
-            address=billing.bill_first_line,
-            city=billing.bill_city,
-            state=billing.bill_state,
-            zip=billing.bill_postal_code
+        options = dict(
+            amount = str(amount),
+            card_num = payment.credit_card,
+            exp_date = payment.cc_expiration,
+            address = billing.bill_first_line,
+            city = billing.bill_city,
+            state = billing.bill_state,
+            zip = billing.bill_postal_code
             )
+            
+        result = self.processor.authorize( **options )
+        
         # result.response may be
         # - approved
         # - error
@@ -65,13 +62,71 @@ class AuthorizeNetAdapter(object):
         #   result.response_reason
         #   result.approval_code
         #   result.trans_id
-        reason = result.response_reason
-        order.processor_order_id = result.trans_id
+
+        if result.response_reason == SUCCESS:
+            annotation = IAnnotations( order )
+            annotation[ interfaces.keys.processor_txn_id ] = result.trans_id
+            annotation[ LAST_FOUR ] = payment.credit_card[-4:]
+            annotation[ APPROVAL_KEY ] = result.approval_code
+            return interfaces.keys.results_success
+
+        return result.response_reason
+
+    def capture( self, order, amount ):
+
+        annotations = IAnnotations( order )
+        trans_id = annotations[ interfaces.keys.processor_txn_id ]
+        approval_code = annotations[ APPROVAL_KEY ]
         
-        # XXX the response_reason should go into the order instead of the
-        # XXX workflow once the order supportse that
-        transition = _reason_to_transition.get( reason )
-        if transition:
-            order.finance_workflow.fireTransition( transition,
-                                                   comment=result.response_reason)
-            
+        result = self.processor.captureAuthorized(
+            amount = str(amount),
+            trans_id = trans_id,
+            approval_code = order.approval_code,
+            )
+
+        if result.response_reason == SUCCESS:
+            annotation = IAnnotations( order )
+            if annotation.get( interfaces.keys.capture_amount ) is None:
+                annotation[ interfaces.keys.capture_amount ] = amount
+            else:
+                annotation[ interfaces.keys.capture_amount ] += amount            
+            return interfaces.keys.results_success
+
+        return result.response_reason
+    
+    def refund( self, order, amount ):
+
+        annotations = IAnnotations( order )
+        trans_id = annotations[ interfaces.keys.processor_txn_id ]
+        last_four = annotations[ LAST_FOUR ]
+        
+        result = self.processor.credit(
+            amount = str( amount ),
+            trans_id = trans_id,
+            card_num = last_four
+            )
+        
+        if result.response_reason == SUCCESS:
+            annotation = IAnnotations( order )
+            if annotation.get( interfaces.keys.capture_amount ) is not None:
+                annotation[ interfaces.keys.capture_amount ] -= amount                        
+            return interfaces.keys.results_success
+        
+        return result.response_reason
+    
+    def void( self, order, amount ):
+        annotations = IAnnotations( order )
+        
+        trans_id = annotations[ interfaces.keys.processor_txn_id ]
+        
+        result = self.processor.void()
+        return interfaces.keys.results.SUCCESS
+    
+    @property
+    def processor( self ):
+        options = IAuthorizeNetOptions(self.context)
+        server = self._sites.get(options.server_url)
+        cc = CcProcessor(server=server,
+                         login=options.merchant_id,
+                         key=options.merchant_key)
+        return cc

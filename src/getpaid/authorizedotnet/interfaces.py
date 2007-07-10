@@ -1,8 +1,12 @@
 """
 """
 
-from zope import schema
+from zope import schema, interface
 from getpaid.core import interfaces
+
+class IAuthorizeNetOrder( interface.Interface ):
+    """ in future use annotation for processor specific options """
+
 
 class IAuthorizeNetOptions(interfaces.IPaymentProcessorOptions):
     """
