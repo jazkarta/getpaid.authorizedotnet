@@ -11,3 +11,4 @@ src/getpaid/authorizedotnet/__init__.py
 src/getpaid/authorizedotnet/authorizenet.py
 src/getpaid/authorizedotnet/configure.zcml
 src/getpaid/authorizedotnet/interfaces.py
+src/getpaid/authorizedotnet/readme.txt
