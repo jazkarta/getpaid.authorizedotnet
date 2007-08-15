@@ -11,7 +11,7 @@ from zope.component import getUtility, getAdapter
 from zope.app.annotation.interfaces import IAnnotations
 
 from zc.authorizedotnet.processing import CcProcessor
-from getpaid.core.interfaces import IPaymentProcessor
+from getpaid.core import interfaces
 
 from interfaces import IAuthorizeNetOptions
 
@@ -23,7 +23,7 @@ LAST_FOUR = "getpaid.authorizedotnet.cc_last_four"
 APPROVAL_KEY = "getpaid.authorizedotnet.approval_code"
 
 class AuthorizeNetAdapter(object):
-    interface.implements(IPaymentProcessor)
+    interface.implements( interfaces.IPaymentProcessor )
 
     options_interface = IAuthorizeNetOptions
 
@@ -49,7 +49,8 @@ class AuthorizeNetAdapter(object):
             state = billing.bill_state,
             zip = billing.bill_postal_code
             )
-            
+
+
         result = self.processor.authorize( **options )
         
         # result.response may be
@@ -63,7 +64,7 @@ class AuthorizeNetAdapter(object):
         #   result.approval_code
         #   result.trans_id
 
-        if result.response_reason == SUCCESS:
+        if result.response == SUCCESS:
             annotation = IAnnotations( order )
             annotation[ interfaces.keys.processor_txn_id ] = result.trans_id
             annotation[ LAST_FOUR ] = payment.credit_card[-4:]
@@ -84,7 +85,7 @@ class AuthorizeNetAdapter(object):
             approval_code = order.approval_code,
             )
 
-        if result.response_reason == SUCCESS:
+        if result.response == SUCCESS:
             annotation = IAnnotations( order )
             if annotation.get( interfaces.keys.capture_amount ) is None:
                 annotation[ interfaces.keys.capture_amount ] = amount
@@ -106,7 +107,7 @@ class AuthorizeNetAdapter(object):
             card_num = last_four
             )
         
-        if result.response_reason == SUCCESS:
+        if result.response == SUCCESS:
             annotation = IAnnotations( order )
             if annotation.get( interfaces.keys.capture_amount ) is not None:
                 annotation[ interfaces.keys.capture_amount ] -= amount                        
