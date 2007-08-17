@@ -29,7 +29,7 @@ class AuthorizeNetAdapter(object):
 
     _sites = dict(
         Production = "secure.authorize.net:443",
-        Sandbox = "test.authorize.net:443"
+        Test = "test.authorize.net:443"
         )
 
     def __init__(self, context):
@@ -114,14 +114,6 @@ class AuthorizeNetAdapter(object):
             return interfaces.keys.results_success
         
         return result.response_reason
-    
-    def void( self, order, amount ):
-        annotations = IAnnotations( order )
-        
-        trans_id = annotations[ interfaces.keys.processor_txn_id ]
-        
-        result = self.processor.void()
-        return interfaces.keys.results.SUCCESS
     
     @property
     def processor( self ):
