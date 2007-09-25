@@ -48,7 +48,7 @@ class AuthorizeNetAdapter(object):
             card_num = payment.credit_card,
             last_name = payment.name_on_card,
             phone     = payment.phone_number,
-            exp_date = payment.cc_expiration,
+            exp_date = payment.cc_expiration.strftime('%m%y'),
             address = billing.bill_first_line,
             city = billing.bill_city,
             state = billing.bill_state,
