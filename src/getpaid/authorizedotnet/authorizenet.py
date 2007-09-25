@@ -39,7 +39,10 @@ class AuthorizeNetAdapter(object):
 
         billing = order.billing_address
         amount = order.getTotalPrice()
-
+        contact = order.contact_information
+        order_id = order.getOrderId()
+        contact_fields = 'Contact Name: ' + contact.name + ';  Contact Phone: ' + contact.phone_number  + ';  Contact Email: ' + contact.email
+        
         options = dict(
             amount = str(amount),
             card_num = payment.credit_card,
@@ -49,7 +52,9 @@ class AuthorizeNetAdapter(object):
             address = billing.bill_first_line,
             city = billing.bill_city,
             state = billing.bill_state,
-            zip = billing.bill_postal_code
+            zip = billing.bill_postal_code,
+            invoice_num = order_id,
+            description = contact_fields
             )
 
 
