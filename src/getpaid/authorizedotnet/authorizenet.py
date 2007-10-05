@@ -89,7 +89,7 @@ class AuthorizeNetAdapter(object):
         result = self.processor.captureAuthorized(
             amount = str(amount),
             trans_id = trans_id,
-            approval_code = order.approval_code,
+            approval_code = approval_code,
             )
 
         if result.response == SUCCESS:
