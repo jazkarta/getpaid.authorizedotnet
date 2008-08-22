@@ -47,9 +47,12 @@ setup(
     package_dir={'':'src'},
     namespace_packages=['getpaid'],
     include_package_data=True,
-    install_requires = [ 'setuptools',
+    install_requires = [ 'getpaid.core',
+                         'setuptools',
+                         'zc.authorizedotnet',
                          'zope.interface',
                          'zope.component',
+                         'zope.app.annotation'
                          ],
     zip_safe = False,
     )
