@@ -1,43 +1,48 @@
-# Copyright (c) 2007 ifPeople, Kapil Thangavelu, and Contributors
-#
-# Permission is hereby granted, free of charge, to any person
-# obtaining a copy of this software and associated documentation
-# files (the "Software"), to deal in the Software without
-# restriction, including without limitation the rights to use,
-# copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following
-# conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-# OTHER DEALINGS IN THE SOFTWARE.
+"""
+$Id: setup.py 1875 2008-08-23 05:26:15Z fairwinds.dp $
 
+Copyright (c) 2007 - 2008 ifPeople, Kapil Thangavelu, and Contributors
+All rights reserved. Refer to LICENSE.txt for details of distribution and use.
+
+Distutils setup
+
+"""
+
+import os
 from setuptools import setup, find_packages
 
-version = "0.2"
+def read(*rnames):
+    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+
+version = '0.3dev'
 
 setup(
-    name="getpaid.authorizedotnet",
+    name='getpaid.authorizedotnet',
     version=version,
-    description="package for plone getpaid to hook up the checkout with Authorize.net",
+    license = 'ZPL2.1',
+    description='GetPaid authorize.net payment processor functionality',
+    long_description = (
+        read('README.txt')
+        + '\n' +
+        read('CHANGES.txt')
+        + '\n' +
+        'Detailed Documentation\n'
+        '**********************\n'
+        + '\n' +
+        read('src', 'getpaid', 'authorizedotnet', 'README.txt')
+        + '\n' +
+        'Download\n'
+        '**********************\n'
+        ),
     classifiers=[
-        "Framework :: Plone",
-        "Programming Language :: Python",
-        "Framework :: Zope3",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: Zope Public License",
-        "Operating System :: OS Independent",
-        "Topic :: Office/Business :: Financial",
-        "Topic :: Software Development :: Libraries",
+        'Framework :: Plone',
+        'Framework :: Zope3',
+        'Programming Language :: Python',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: Zope Public License',
+        'Operating System :: OS Independent',
+        'Topic :: Office/Business :: Financial',
+        'Topic :: Software Development :: Libraries',
         ],
     keywords='',
     author='getpaid community',

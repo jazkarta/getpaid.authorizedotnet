@@ -49,11 +49,3 @@ Refunding an Order
 
 Voiding an Order
 ----------------
-    
-
-      
-      
-
-
-
-
