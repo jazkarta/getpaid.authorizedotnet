@@ -3,14 +3,18 @@ CHANGES
 =======
 
 
+0.4 (unreleased)
+----------------
+
+
 0.3 (2008-08-29)
 ----------------
 
-- Added buildout files and general text documents to project root.
-- Removed setup.cfg
+* Added buildout files and general text documents to project root.
+* Removed setup.cfg
 
 
 0.2 (2008-08-21)
 ----------------
 
-- Eggified package
+* Eggified package
