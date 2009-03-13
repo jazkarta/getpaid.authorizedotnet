@@ -14,7 +14,7 @@ from setuptools import setup, find_packages
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '0.4dev'
+version = '0.3.1dev'
 
 setup(
     name='getpaid.authorizedotnet',

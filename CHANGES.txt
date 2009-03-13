@@ -3,8 +3,10 @@ CHANGES
 =======
 
 
-0.4 (unreleased)
-----------------
+0.3.1 (2009-03-13)
+------------------
+
+- added M2Crypto in the setup.py dependencies [lucielejard]
 
 
 0.3 (2008-08-29)
