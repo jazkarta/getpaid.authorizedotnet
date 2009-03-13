@@ -57,7 +57,8 @@ setup(
                          'zc.authorizedotnet',
                          'zope.interface',
                          'zope.component',
-                         'zope.app.annotation'
+                         'zope.app.annotation',
+                         'M2Crypto'
                          ],
     zip_safe = False,
     )
