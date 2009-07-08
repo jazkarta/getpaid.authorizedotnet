@@ -38,6 +38,8 @@ from getpaid.core import interfaces
 
 from interfaces import IAuthorizeNetOptions
 
+from datetime import date
+
 SUCCESS = 'approved'
 
 # needed for refunds
@@ -65,13 +67,28 @@ class AuthorizeNetAdapter(object):
         contact = order.contact_information
         order_id = order.getOrderId()
         contact_fields = 'Contact Name: ' + contact.name + ';  Contact Phone: ' + contact.phone_number  + ';  Contact Email: ' + contact.email
-        
+
+        expiration_date = ''
+        if hasattr(payment.cc_expiration, 'strftime'):
+            expiration_date = payment.cc_expiration.strftime('%m%y')
+        else:
+            # If cc_expiration is not of type date, then it should be 
+            # a string like this: '2011-08-03 00:00'
+            # This is a bug in getpaid.formgen's single page checkout
+            # and the correct fix is to swap out it's expiration date
+            # widget with one that returns a date.
+            yearMonthDay = payment.cc_expiration.split(' ')[0].split('-')
+            _date = date(int(yearMonthDay[0]), 
+                         int(yearMonthDay[1]), 
+                         int(yearMonthDay[2]))
+            expiration_date = _date.strftime('%m%y')
+            
         options = dict(
             amount = str(amount),
             card_num = payment.credit_card,
             last_name = payment.name_on_card,
             phone     = payment.bill_phone_number,
-            exp_date = payment.cc_expiration.strftime('%m%y'),
+            exp_date = expiration_date,
             address = billing.bill_first_line,
             city = billing.bill_city,
             state = billing.bill_state,
