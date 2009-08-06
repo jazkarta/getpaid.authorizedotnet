@@ -116,6 +116,9 @@ class AuthorizeNetAdapter(object):
             annotation[ interfaces.keys.processor_txn_id ] = result.trans_id
             annotation[ LAST_FOUR ] = payment.credit_card[-4:]
             annotation[ APPROVAL_KEY ] = result.approval_code
+
+            order.user_payment_info_trans_id = result.trans_id
+
             return interfaces.keys.results_success
 
         return result.response_reason
