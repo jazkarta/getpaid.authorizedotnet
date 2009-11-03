@@ -1,6 +1,11 @@
 <configure xmlns="http://namespaces.zope.org/zope"
 	   xmlns:five="http://namespaces.zope.org/five">
 
+  <include package="plone.z3cform" />
+  <include package="getpaid.core" />
+  <include package=".browser" />
+  <include package=".ipn" />
+
   <adapter
      for="getpaid.core.interfaces.IStore"
      provides=".interfaces.IAuthorizeNetOptions"
@@ -14,4 +19,16 @@
      name="Authorize.Net"
      />
 
+   <adapter
+      for="getpaid.core.interfaces.IShoppingCart"
+      provides="getpaid.core.interfaces.IOffsitePaymentProcessor"
+      name="getpaid.authorizedotnet.processor"
+      factory=".authorizenet.OffSiteProcessor" />
+
+  <adapter
+     for=".authorizenet.IOffsiteOrder
+          getpaid.core.interfaces.IDefaultFinanceWorkflow"
+     provides="getpaid.core.interfaces.IWorkflowPaymentProcessorIntegration"
+     factory=".authorizenet.FinanceProcessorIntegration"
+     />
 </configure>

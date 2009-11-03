@@ -1,0 +1,63 @@
+<metal:page use-macro="context/@@getpaid-content-template/macros/content_space"
+            i18n:domain="plonegetpaid">
+  <metal:block fill-slot="getpaid_content">
+    <div id="getpaid-authdotnet-smi-checkout-proceed" >
+	    <script>
+		    //<!--
+		    jQuery(document).ready(function() { 
+			     jQuery('#getpaid-authdotnet-smi-checkout-proceed-submit').click(); 
+		    })
+		    //-->
+	    </script>
+	    <p>You should be automatically redirected to Authorize.net.
+		   If not, please follow the following link:</p>
+	    <div>
+	    	  <form method="POST" action="https://test.authorize.net/gateway/transact.dll"
+                    tal:attributes="action view/server_url">
+			  <input type="hidden"
+			         name="x_login"
+			         value="x_login"
+			         tal:attributes="value view/merchant_id" />
+              <input type="hidden"
+                     name="x_amount"
+                     value="0"
+                     tal:attributes="value view/amount" />
+			  <input type='hidden' 
+			         name='x_fp_sequence' 
+			         value='x_fp_sequence'
+			         tal:attributes="value view/sequence" />
+			  <input type='hidden' 
+			         name='x_fp_timestamp' 
+			         value='x_fp_timestamp'
+			         tal:attributes="value view/timestamp" />
+			  <input type='hidden' 
+			         name='x_fp_hash' 
+			         value='x_fp_hash'
+			         tal:attributes="value view/hash" />
+			<!--
+			<input type="hidden" value="TRUE" name="x_test_request"/>
+			-->
+			  <input type="hidden" 
+			         value="PAYMENT_FORM" 
+			         name="x_show_form"/>
+			  <input type="hidden" 
+			         name="x_method" 
+			         value="CC" />
+			  <input type="hidden" name="x_receipt_link_method" value="POST" />
+			  <input type="hidden" name="x_receipt_link_text" value="Return to our online store" />
+			  <input type="hidden" name="x_receipt_link_URL"
+			         value="http://www.mydomain.com"
+                     tal:attributes="value view/receipt_link_url" />                     
+              <input type="hidden"
+                     name="x_invoice_num"
+                     value="0"
+                     tal:attributes="value view/order_id" />                     
+			  <input type="submit" class="button context"
+			         id="getpaid-authdotnet-smi-checkout-proceed-submit"
+			         value="Check out" />
+			</form>
+
+	    </div>
+    </div>
+  </metal:block>
+</metal:page>

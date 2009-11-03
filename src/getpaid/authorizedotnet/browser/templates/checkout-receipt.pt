@@ -1,0 +1,8 @@
+<metal:page use-macro="context/@@getpaid-content-template/macros/content_space"
+            i18n:domain="plonegetpaid">
+  <metal:block fill-slot="getpaid_content">
+    <div id="getpaid-authdotnet-smi-checkout-proceed" >
+        <span tal:content="view/verify">verify</span>
+	</div>
+  </metal:block>
+</metal:page>

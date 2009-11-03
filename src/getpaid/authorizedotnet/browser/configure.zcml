@@ -1,0 +1,33 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:browser="http://namespaces.zope.org/browser"
+	       xmlns:five="http://namespaces.zope.org/five">
+
+  <browser:page
+     for="..authorizenet.OffSiteProcessor"
+     template="templates/checkout-button.pt"
+     name="getpaid.authorizedotnet.checkout-button"
+     class=".button.ButtonView"
+     permission="zope2.View"
+     />
+
+  <browser:page
+     for="*"
+     template="templates/checkout-proceed.pt"
+     name="getpaid-authdotnet-smi-checkout-proceed"
+     class=".button.View"
+     permission="zope2.View"
+     />
+
+  <browser:page
+     for="*"
+     template="templates/checkout-receipt.pt"
+     name="getpaid-authdotnet-smi-receipt"
+     class=".receipt.View"
+     permission="zope2.View"
+     />
+
+  <adapter
+      factory=".button.Widgets"
+      />
+
+</configure>

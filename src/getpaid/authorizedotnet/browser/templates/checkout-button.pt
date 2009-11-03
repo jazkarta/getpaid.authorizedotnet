@@ -1,0 +1,3 @@
+	<div id="skel-contents">
+    	<span tal:replace="structure view/contents" />
+	</div>

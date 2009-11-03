@@ -1,26 +1,4 @@
-# Copyright (c) 2007 ifPeople, Kapil Thangavelu, and Contributors
-#
-# Permission is hereby granted, free of charge, to any person
-# obtaining a copy of this software and associated documentation
-# files (the "Software"), to deal in the Software without
-# restriction, including without limitation the rights to use,
-# copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following
-# conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-# OTHER DEALINGS IN THE SOFTWARE.
-
+# Copyright (c) 2007 ifPeople, Juan Pablo Giménez, and Contributors
 """
 
 notes on error handling, if we haven't talked to the processor then raise an exception,
@@ -28,24 +6,42 @@ else return an error message so higher levels can interpret/record/notify user/e
 
 $Id: $
 """
+from time import time
+import hmac
+import random
+from cPickle import loads, dumps
 
-from zope import interface
+from AccessControl import getSecurityManager
+from zope import interface, schema
 from zope.component import getUtility, getAdapter
 from zope.app.annotation.interfaces import IAnnotations
+from zope.app.component.hooks import getSite
 
 from zc.authorizedotnet.processing import CcProcessor
-from getpaid.core import interfaces
+from getpaid.core import interfaces, payment
+from getpaid.core.processors import OffsitePaymentProcessor
+from getpaid.core.interfaces import IShoppingCartUtility, IOrderManager, \
+                                    ILineContainerTotals
+from getpaid.core.order import Order as BaseOrder
 
 from interfaces import IAuthorizeNetOptions
-
 from datetime import date
 
 SUCCESS = 'approved'
+DEFAULT_SHOW_FORM = 'PAYMENT_FORM'
+DEFAULT_METHOD = 'CC'
+DEFAULT_LINK_METHOD='POST'
+DEFAULT_LINK_TEXT='Return to our online store'
 
 # needed for refunds
 LAST_FOUR = "getpaid.authorizedotnet.cc_last_four"
 
 APPROVAL_KEY = "getpaid.authorizedotnet.approval_code"
+
+_offsite_hosts = dict(
+    Production = "https://secure.authorize.net:443/gateway/transact.dll",
+    Test = "https://test.authorize.net:443/gateway/transact.dll"
+)
 
 class AuthorizeNetAdapter(object):
     interface.implements( interfaces.IPaymentProcessor )
@@ -173,3 +169,125 @@ class AuthorizeNetAdapter(object):
                          login=options.merchant_id,
                          key=options.merchant_key)
         return cc
+
+class IOffSiteProcessorSchema(interface.Interface):
+    x_login = schema.TextLine()
+    x_amount = schema.TextLine()
+    x_fp_sequence = schema.TextLine()
+    x_fp_timestamp = schema.TextLine()
+    x_fp_hash = schema.TextLine()
+    x_show_form = schema.TextLine()
+    x_method = schema.TextLine()
+    x_receipt_link_method = schema.TextLine()
+    x_receipt_link_text = schema.TextLine()
+    x_receipt_link_URL = schema.TextLine()
+    x_invoice_num = schema.TextLine()
+
+class IOffsiteOrder(interfaces.IOrder):
+    """
+    """
+    
+class Order(BaseOrder):
+    """
+    """
+    interface.implements(IOffsiteOrder)
+
+class OffSiteProcessor(OffsitePaymentProcessor):
+    interface.implements(IOffSiteProcessorSchema)
+    
+    name = 'getpaid.authorizedotnet.offsite_processor'
+    title = u'Off-site authorize.net Checkout'
+    options_interface = IAuthorizeNetOptions
+
+    checkout_button = 'getpaid.authorizedotnet.checkout-button'
+
+    def __init__(self, cart):
+        super(OffsitePaymentProcessor, self).__init__(cart)
+        self.options = self.options_interface(getSite())
+
+    def server_url(self):
+        return _offsite_hosts[self.options.authorizedotnet_server_url]
+
+    @property
+    def x_login(self):
+        return self.options.login_id
+
+    @property
+    def x_amount(self):
+        cartutil=getUtility(IShoppingCartUtility)
+        cart=cartutil.get(getSite())
+        total = ILineContainerTotals(cart).getTotalPrice()
+        return '%.2f' % total
+
+    @property
+    def x_fp_sequence(self):
+        return random.randrange(0, 999, 1)
+
+    @property
+    def x_fp_timestamp(self):
+        return ("%s" % time()).split(".")[0]
+
+    @property
+    def x_fp_hash(self):
+        fingerprint = "%s^%s^%s^%s^" % (self.merchant_id(),
+                                          self.x_fp_sequence,
+                                          self.x_fp_timestamp,
+                                          self.x_amount)
+        return hmac.new(self.options.transaction_key,fingerprint).hexdigest()
+    
+    @property
+    def x_show_form(self):
+        return DEFAULT_SHOW_FORM
+    
+    @property
+    def x_method(self):
+        return DEFAULT_METHOD
+
+    @property
+    def x_receipt_link_method(self):
+        return DEFAULT_LINK_METHOD
+    
+    @property
+    def x_receipt_link_text(self):
+        return DEFAULT_LINK_TEXT
+
+    @property
+    def x_receipt_link_URL(self):
+        return getSite().absolute_url() + '/@@getpaid.nmi.ipnreactor'
+
+    @property
+    def x_invoice_num(self):
+        cartutil=getUtility(IShoppingCartUtility)
+        cart=cartutil.get(getSite())
+        # we'll get the order_manager, create the new order, and store it.
+        order_manager = getUtility(IOrderManager)
+        new_order_id = order_manager.newOrderId()
+        order = Order()
+        
+        # register the payment processor name to make the workflow handlers happy
+        order.processor_id = 'getpaid.authorizedotnet.processor'
+
+        # FIXME: registering an empty contact information list for now - need to populate this from user
+        # if possible
+        order.contact_information = payment.ContactInformation()
+        order.billing_address = payment.BillingAddress()
+        order.shipping_address = payment.ShippingAddress()
+
+        order.order_id = new_order_id
+        
+        # make cart safe for persistence by using pickling
+        order.shopping_cart = loads(dumps(cart))
+        order.user_id = getSecurityManager().getUser().getId()
+
+        order.finance_workflow.fireTransition('create')
+        order.finance_workflow.fireTransition('authorize')
+        
+        order_manager.store(order)
+
+        return order.order_id
+
+class FinanceProcessorIntegration(payment.DefaultFinanceProcessorIntegration):
+
+    def __call__( self, event ):
+        # processor is async, so just return
+        return

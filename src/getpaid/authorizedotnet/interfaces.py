@@ -35,11 +35,11 @@ class IAuthorizeNetOptions(interfaces.IPaymentProcessorOptions):
     """
     Authorize.Net options
     """
-    server_url = schema.Choice(
+    authorizedotnet_server_url = schema.Choice(
         title=u"Authorize.net Server URL",        
         values=("Test",
                 "Production")
         )
-    merchant_id = schema.ASCIILine( title=u"API Login Id" )
-    merchant_key = schema.ASCIILine( title=u"Transaction Key" )
+    login_id = schema.ASCIILine( title=u"API Login Id" )
+    transaction_key = schema.ASCIILine( title=u"Transaction Key" )
         
