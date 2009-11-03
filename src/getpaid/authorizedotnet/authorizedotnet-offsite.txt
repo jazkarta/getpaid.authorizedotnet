@@ -56,10 +56,10 @@ Configure Off-site authorize.net Checkout processor:
 
     >>> browser.getLink('GetPaid').click()
     >>> browser.getLink('Payment Processor Settings').click()
-    >>> browser.getControl(name="form.getpaid.authorizedotnet.offsite_processor.server_url").value = ['Test']
-    >>> browser.getControl(name="form.getpaid.authorizedotnet.offsite_processor.merchant_id").value = '1234567890'
+    >>> browser.getControl(name="form.getpaid.authorizedotnet.offsite_processor.authorizedotnet_server_url").value = ['Test']
+    >>> browser.getControl(name="form.getpaid.authorizedotnet.offsite_processor.login_id").value = '1234567890'
     >>> browser.getControl(
-    ...     name="form.getpaid.authorizedotnet.offsite_processor.merchant_key").value = 'HsYXFoZfHAqyLcCRYeH8qQ'
+    ...     name="form.getpaid.authorizedotnet.offsite_processor.transaction_key").value = 'HsYXFoZfHAqyLcCRYeH8qQ'
     >>> browser.getControl('Apply').click()
 
 Finished with the configuration so we can now log out:
