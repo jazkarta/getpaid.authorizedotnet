@@ -206,11 +206,11 @@ class OffSiteProcessor(OffsitePaymentProcessor):
         self.options = self.options_interface(getSite())
 
     def server_url(self):
-        return _offsite_hosts[self.options.authorizedotnet_server_url]
+        return _offsite_hosts[getattr(self.options, "authorizedotnet_server_url", "Test")]
 
     @property
     def x_login(self):
-        return self.options.login_id
+        return getattr(self.options, "login_id", "")
 
     @property
     def x_amount(self):
