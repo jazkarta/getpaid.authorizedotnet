@@ -229,10 +229,10 @@ class OffSiteProcessor(OffsitePaymentProcessor):
 
     @property
     def x_fp_hash(self):
-        fingerprint = "%s^%s^%s^%s^" % (self.merchant_id(),
-                                          self.x_fp_sequence,
-                                          self.x_fp_timestamp,
-                                          self.x_amount)
+        fingerprint = "%s^%s^%s^%s^" % (self.x_login,
+                                        self.x_fp_sequence,
+                                        self.x_fp_timestamp,
+                                        self.x_amount)
         return hmac.new(self.options.transaction_key,fingerprint).hexdigest()
     
     @property
