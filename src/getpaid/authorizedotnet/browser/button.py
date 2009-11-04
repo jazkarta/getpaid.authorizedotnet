@@ -109,6 +109,7 @@ class ButtonForm(form.Form):
     ignoreRequest = True # don't use request to get widget data
 #    label = u"hidden form"
     prefix = '' # external processor needs unprefixed fields
+    enctype = 'application/x-www-form-urlencoded'
 
     @button.buttonAndHandler(u'Authorize.net Checkout')
     def handlePay(self, action):

@@ -204,6 +204,8 @@ class OffSiteProcessor(OffsitePaymentProcessor):
     def __init__(self, cart):
         super(OffsitePaymentProcessor, self).__init__(cart)
         self.options = self.options_interface(getSite())
+        self.x_fp_sequence = random.randrange(0, 999, 1)
+        self.x_fp_timestamp = ("%s" % time()).split(".")[0]
 
     def server_url(self):
         return _offsite_hosts[getattr(self.options, "authorizedotnet_server_url", "Test")]
@@ -218,14 +220,6 @@ class OffSiteProcessor(OffsitePaymentProcessor):
         cart=cartutil.get(getSite())
         total = ILineContainerTotals(cart).getTotalPrice()
         return '%.2f' % total
-
-    @property
-    def x_fp_sequence(self):
-        return random.randrange(0, 999, 1)
-
-    @property
-    def x_fp_timestamp(self):
-        return ("%s" % time()).split(".")[0]
 
     @property
     def x_fp_hash(self):
@@ -253,7 +247,7 @@ class OffSiteProcessor(OffsitePaymentProcessor):
 
     @property
     def x_receipt_link_URL(self):
-        return getSite().absolute_url() + '/@@getpaid.nmi.ipnreactor'
+        return getSite().absolute_url() + '/@@getpaid.authorizedotnet.ipnreactor'
 
     @property
     def x_invoice_num(self):

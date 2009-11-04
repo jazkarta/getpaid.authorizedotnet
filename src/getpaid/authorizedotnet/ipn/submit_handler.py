@@ -29,11 +29,11 @@ class Listener(BrowserView):
         response = form['x_response_reason_code']
         responsetext = form['x_response_reason_text']
         
-        is_valid_IPN = self.verify(processor.key)
-        if not is_valid_IPN:
-            logger.debug('received bogus IPN: %s' % responsetext)
-            return self.request.response.redirect('%s/@@getpaid.authorizedotnet.error?orderid=%s' %
-                                                  (self.portal.absolute_url(), orderid))
+#        is_valid_IPN = self.verify(processor.key)
+#        if not is_valid_IPN:
+#            logger.debug('received bogus IPN: %s' % responsetext)
+#            return self.request.response.redirect('%s/@@getpaid.authorizedotnet.error?orderid=%s' %
+#                                                  (self.portal.absolute_url(), orderid))
         order_manager = getUtility(IOrderManager)
         if orderid in order_manager:
             order = order_manager.get(orderid)
