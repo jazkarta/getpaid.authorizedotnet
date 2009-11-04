@@ -25,9 +25,9 @@ class Listener(BrowserView):
         processor = queryAdapter(cart, IOffsitePaymentProcessor, 'getpaid.authorizedotnet.processor')
         processor.options = processor.options_interface(self.portal)
         form = self.request.form
-        orderid = form['orderid']
-        response = form['response']
-        responsetext = form['responsetext']
+        orderid = form['x_invoice_num']
+        response = form['x_response_reason_code']
+        responsetext = form['x_response_reason_text']
         
         is_valid_IPN = self.verify(processor.key)
         if not is_valid_IPN:

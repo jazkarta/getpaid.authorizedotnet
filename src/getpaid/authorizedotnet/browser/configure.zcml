@@ -30,4 +30,20 @@
       factory=".button.Widgets"
       />
 
+   <browser:page
+      for="*"
+      name="getpaid.authorizedotnet.thank-you"
+      class=".views.Thankyou"
+      template="templates/thank-you.pt"
+      permission="zope2.View"
+      />
+
+   <browser:page
+      for="*"
+      name="getpaid.authorizedotnet.error"
+      class=".views.Error"
+      template="templates/error.pt"
+      permission="zope2.View"
+      />
+
 </configure>
