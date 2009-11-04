@@ -142,4 +142,7 @@ class ButtonWrapper(FormWrapper):
         self.request.getURL = self.processor.server_url
         return self.render_form()
 
+    def enabled(self):
+        return self.processor.x_login
+
 ButtonView = wrap_form(ButtonForm, ButtonWrapper)

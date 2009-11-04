@@ -1,3 +1,4 @@
-	<div id="skel-contents">
+	<div id="skel-contents"
+         tal:condition="view/enabled">
     	<span tal:replace="structure view/contents" />
 	</div>
