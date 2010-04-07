@@ -1,4 +1,4 @@
-# Copyright (c) 2007 ifPeople, Kapil Thangavelu, and Contributors
+# Copyright (c) 2010 ifPeople, Kapil Thangavelu, and Contributors
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -30,8 +30,7 @@ $Id: $
 """
 
 from zope import interface
-from zope.component import getUtility, getAdapter
-from zope.app.annotation.interfaces import IAnnotations
+from zope.annotation.interfaces import IAnnotations
 
 from zc.authorizedotnet.processing import CcProcessor
 from getpaid.core import interfaces

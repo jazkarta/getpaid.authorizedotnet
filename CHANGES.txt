@@ -2,12 +2,15 @@
 CHANGES
 =======
 
-0.3.4 (unreleased)
+0.4.0 (2010-04-07)
 ------------------
+
+- Use zope.annotation instead of zope.app.annotation
+  [davisagli]
 
 0.3.3 (2009-08-19)
 ------------------
-- Record the transaction id returned by wuthorize.net
+- Record the transaction id returned by authorize.net
 
 0.3.2 (2009-07-22)
 ------------------

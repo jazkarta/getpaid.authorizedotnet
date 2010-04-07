@@ -8,7 +8,7 @@ Store Specific Processor Setting Tests
 First let's create a store class to work with:
       
       >>> from getpaid.core import interfaces 
-      >>> from zope.app.annotations import IAttributeAnnotatable
+      >>> from zope.annotation import IAttributeAnnotatable
       >>> from zope.interface import implements
       >>> class Store:
       ...    implements( interfaces.IStore, IAttributeAnnotatable )

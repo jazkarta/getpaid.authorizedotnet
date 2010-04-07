@@ -1,7 +1,7 @@
 """
 $Id: setup.py 1875 2008-08-23 05:26:15Z fairwinds.dp $
 
-Copyright (c) 2007 - 2008 ifPeople, Kapil Thangavelu, and Contributors
+Copyright (c) 2007 - 2010 ifPeople, Kapil Thangavelu, and Contributors
 All rights reserved. Refer to LICENSE.txt for details of distribution and use.
 
 Distutils setup
@@ -14,7 +14,7 @@ from setuptools import setup, find_packages
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '0.3.4dev'
+version = '0.4.0'
 
 setup(
     name='getpaid.authorizedotnet',
@@ -57,7 +57,7 @@ setup(
                          'zc.authorizedotnet',
                          'zope.interface',
                          'zope.component',
-                         'zope.app.annotation',
+                         'zope.annotation',
                          'M2Crypto'
                          ],
     zip_safe = False,

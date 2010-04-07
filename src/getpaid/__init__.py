@@ -1,4 +1,4 @@
-# Copyright (c) 2007 ifPeople, Kapil Thangavelu, and Contributors
+# Copyright (c) 2010 ifPeople, Kapil Thangavelu, and Contributors
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
