@@ -1,0 +1,67 @@
+Authorize.Net ARB Integration
+=============================
+
+The ARBProcessor provides support for Authorize.net's Automated Recurring
+Billing (ARB) API, which makes it possible to manage subscription-based
+payments via an XML API.
+
+See http://www.authorize.net/support/ARB_guide.pdf for API documentation
+including prerequisites for using ARB, and details of what parameters may
+be specified.
+
+Transaction Keys
+----------------
+
+Each ARB transaction must be accompanied by a merchant login and a
+"transaction key".  This key is obtained from the merchant interface.  After
+importing the ARBProcessor class you must pass it your login and transaction
+key:
+
+    >>> from getpaid.authorizedotnet.subscription import ARBProcessor
+    >>> arb = ARBProcessor(server=SERVER_NAME, login=LOGIN, key=KEY)
+
+Creating a subscription
+-----------------------
+
+To create a new subscription, use the ``create`` method.
+
+    >>> from time import gmtime, strftime
+    >>> today = strftime("%Y-%m-%d", gmtime())
+    >>> exp_date = strftime("%Y-%m", gmtime())
+    >>> import random
+    >>> amount = '%.2f' % random.uniform(0,100)
+
+    >>> result = arb.create(refId = '1234',
+    ...                     subscription = {
+    ...                          'name': '1234',
+    ...                          'paymentSchedule': {
+    ...                              'interval': {
+    ...                                  'length': 1,
+    ...                                  'unit': 'months', },
+    ...                              'startDate': today,
+    ...                              'totalOccurrences': 12,
+    ...                              'trialOccurrences': 0, },
+    ...                          'amount': amount,
+    ...                          'trialAmount': '0',
+    ...                          'payment': {
+    ...                              'creditCard': {
+    ...                                  'cardNumber': '4007000000027',
+    ...                                  'expirationDate': exp_date,
+    ...                                  'cardCode': '111', },
+    ...                              },
+    ...                          'billTo': {
+    ...                              'firstName': 'Harvey',
+    ...                              'lastName': 'Frank', },
+    ...                          },
+    ...                      )
+
+It returns a dictionary which contains details about the transaction.
+
+    >>> result['refId']
+    '1234'
+    >>> result['messages']['resultCode']
+    'Ok'
+    >>> result['messages']['message']['text']
+    'Successful.'
+    >>> result['subscriptionId']
+    '123456'

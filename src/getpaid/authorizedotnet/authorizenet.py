@@ -139,7 +139,7 @@ class AuthorizeNetAdapter(object):
             if annotation.get( interfaces.keys.capture_amount ) is None:
                 annotation[ interfaces.keys.capture_amount ] = amount
             else:
-                annotation[ interfaces.keys.capture_amount ] += amount            
+                annotation[ interfaces.keys.capture_amount ] += amount
             return interfaces.keys.results_success
 
         return result.response_reason
@@ -159,7 +159,7 @@ class AuthorizeNetAdapter(object):
         if result.response == SUCCESS:
             annotation = IAnnotations( order )
             if annotation.get( interfaces.keys.capture_amount ) is not None:
-                annotation[ interfaces.keys.capture_amount ] -= amount                        
+                annotation[ interfaces.keys.capture_amount ] -= amount
             return interfaces.keys.results_success
         
         return result.response_reason
