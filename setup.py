@@ -24,7 +24,7 @@ INSTALL_REQUIRES = [
     'zope.component',
     'zope.annotation',
     'M2Crypto'
-    ],
+    ]
 
 if sys.version_info[:3] < (2, 5, 0):
     # elementtree is only required before Python 2.5
