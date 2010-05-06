@@ -7,14 +7,14 @@ except ImportError:
 import zc.ssl
 
 # ARB expects request parameters in a particular order
-REQUEST_KEY_ORDER = ("merchantAuthentication refId subscription name transactionKey "
+REQUEST_KEY_ORDER = ("merchantAuthentication refId subscriptionId subscription name transactionKey "
                      "paymentSchedule interval length unit "
                      "startDate totalOccurrences trialOccurrences amount trialAmount "
                      "payment creditCard cardNumber expirationDate cardCode bankAccount "
                      "accountType routingNumber accountNumber nameOnAccount echeckType "
                      "bankName order invoiceNumber description customer id email "
                      "phoneNumber faxNumber billTo firstName lastName company address "
-                     "city state zip country shipTo subscriptionId".split())
+                     "city state zip country shipTo".split())
 
 def arb_request_key_order(i):
     try:
@@ -55,8 +55,8 @@ class ARBConnection(object):
         xml = """<?xml version="1.0" encoding="utf-8"?>
 <%s xmlns="AnetApi/xml/v1/schema/AnetApiSchema.xsd">
 %s
-</ARBCreateSubscriptionRequest>
-""" % (method, xmlify_dict(kw))
+</%s>
+""" % (method, xmlify_dict(kw), method)
         
         if self.server.startswith('localhost:'):
             server, port = self.server.split(':')

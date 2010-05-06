@@ -63,5 +63,52 @@ It returns a dictionary which contains details about the transaction.
     'Ok'
     >>> result['messages']['message']['text']
     'Successful.'
-    >>> result['subscriptionId']
+    >>> subscriptionId = result['subscriptionId']
+    >>> subscriptionId
     '123456'
+
+Updating a subscription
+-----------------------
+
+To update an existing subscription, use the ``update`` method.  This accepts
+the same parameters as ``create``, but all are optional except for the
+subscriptionId.
+
+    >>> result = arb.update(subscriptionId = subscriptionId,
+    ...                     subscription = {
+    ...                          'paymentSchedule': {
+    ...                              'totalOccurrences': 6, },
+    ...                          },
+    ...                      )
+    >>> result['messages']['resultCode']
+    'Ok'
+
+Trying to update a non-existent subscription results in an error code.
+
+    >>> result = arb.update(subscriptionId = '1',
+    ...                     subscription = {
+    ...                          'paymentSchedule': {
+    ...                              'totalOccurrences': 6, },
+    ...                          },
+    ...                     )
+    >>> result['messages']['resultCode']
+    'Error'
+    >>> result['messages']['message']['text']
+    'The subscription cannot be found.'
+
+Canceling a subscription
+------------------------
+
+To cancel an existing subscription, use the ``cancel`` method.
+
+    >>> result = arb.cancel(subscriptionId = subscriptionId)
+    >>> result['messages']['resultCode']
+    'Ok'
+
+Trying to cancel a non-existent subscription results in an error code.
+
+    >>> result = arb.cancel(subscriptionId = '1')
+    >>> result['messages']['resultCode']
+    'Error'
+    >>> result['messages']['message']['text']
+    'The subscription cannot be found.'
