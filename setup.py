@@ -43,7 +43,9 @@ setup(
         'Detailed Documentation\n'
         '**********************\n'
         + '\n' +
-        read('src', 'getpaid', 'authorizedotnet', 'README.txt')
+        read('src', 'getpaid', 'authorizedotnet', 'authorizenet.txt')
+        + '\n' +
+        read('src', 'getpaid', 'authorizedotnet', 'subscription.txt')
         + '\n' +
         'Download\n'
         '**********************\n'

@@ -1,0 +1,76 @@
+GetPaid Authorize.Net Payment Processor
+=======================================
+
+The AuthorizeNetAdapter is an implementation of a GetPaid payment processor
+that can process payments via the Authorize.net APIs.
+
+Test Setup
+----------
+
+In order to use the AuthorizeNetAdapter, we first need a context that can be
+adapted to IAuthorizeNetOptions to get the keys for accessing the Authorize.net
+API. (LOGIN and KEY are initialized in tests.py based on environment variables.
+Use the login Authorize.net)
+
+  >>> from zope.interface import implements
+  >>> from getpaid.authorizedotnet.interfaces import IAuthorizeNetOptions
+  >>> class DummyAuthContext(object):
+  ...     implements(IAuthorizeNetOptions)
+  ...     server_url = 'Test'
+  ...     merchant_id = LOGIN
+  ...     merchant_key = KEY
+
+We also need an order that we want to process payments for.
+
+  >>> from getpaid.core import order, item, cart, options, interfaces, payment
+  >>> my_cart = cart.ShoppingCart()
+  >>> my_cart['abc'] = abc = item.LineItem()
+  >>> abc.cost = 22.20; abc.name = 'abc'; abc.quantity = 3
+  >>> order = order.Order()
+  >>> order.shopping_cart = my_cart
+  >>> order.contact_information = contact = payment.ContactInformation()
+  >>> contact.name = 'Harvey Frank'
+  >>> contact.phone_number = '2062681235'
+  >>> contact.email = 'harvey@example.com'
+  >>> order.billing_address = billing = payment.BillingAddress()
+  >>> billing.bill_first_line = '1402 3rd Ave.'
+  >>> billing.bill_city = 'Seattle'
+  >>> billing.bill_state = 'WA'
+  >>> billing.bill_postal_code = '98101'
+
+And a property bag with details about the payment.
+
+  >>> from datetime import datetime, timedelta
+  >>> BillingInfo = options.PropertyBag.makeclass(interfaces.IUserPaymentInformation)
+  >>> payment = BillingInfo(
+  ...     name_on_card = 'Harvey Frank',
+  ...     bill_phone_number = '2062861235',
+  ...     credit_card_type = 'Visa',
+  ...     credit_card = '4007000000027',
+  ...     cc_expiration = datetime.now() + timedelta(365),
+  ...     cc_cvc = '111',
+  ...     )
+
+Authorizing an Order
+--------------------
+
+Authorization confirms that an order may be processed using the given billing
+information.
+
+    >>> from getpaid.authorizedotnet.authorizenet import AuthorizeNetAdapter
+    >>> authnet = AuthorizeNetAdapter(DummyAuthContext())
+    >>> authnet.authorize(order, payment) == interfaces.keys.results_success
+    True
+
+
+
+Capturing/Charing an Order
+--------------------------
+
+Refunding an Order
+------------------
+
+
+Voiding an Order
+----------------
+

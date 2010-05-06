@@ -1,9 +1,22 @@
 from zope.testing import doctest, renormalizing
+from zope.testing.doctestunit import DocFileSuite
+from zope.app.testing import placelesssetup
+from zope.component import provideUtility
+from Products.Five import zcml
 import os
 import re
 import unittest
 
 def remoteSetUp(test):
+    placelesssetup.setUp()
+    from getpaid.core.interfaces import ITaxUtility
+    from getpaid.core.tax import TaxUtility
+    provideUtility(TaxUtility(), ITaxUtility)
+    import Products.Five
+    import getpaid.authorizedotnet
+    zcml.load_config('configure.zcml', Products.Five)
+    zcml.load_config('configure.zcml', getpaid.authorizedotnet)
+    
     login = os.environ.get('AUTHORIZE_DOT_NET_LOGIN')
     key = os.environ.get('AUTHORIZE_DOT_NET_TRANSACTION_KEY')
 
@@ -22,17 +35,17 @@ def test_suite():
         (re.compile(r"'\d{9}'"), "'123456789'"), # for transaction IDs
         ])
 
-    arb = doctest.DocFileSuite(
-            'subscription.txt',
+    suites = []
+    for testfile in ['authorizenet.txt', 'subscription.txt']:
+        suite = DocFileSuite(
+            testfile,
             globs = dict(
                 SERVER_NAME='apitest.authorize.net',
                 ),
             optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
             checker = checker,
             setUp = remoteSetUp,
+            tearDown = placelesssetup.tearDown,
             )
-    arb.level = 5
-    return unittest.TestSuite(arb)
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='test_suite')
+        suites.append(suite)
+    return unittest.TestSuite(suites)
