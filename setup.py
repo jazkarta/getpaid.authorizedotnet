@@ -8,13 +8,27 @@ Distutils setup
 
 """
 
-import os
+import os, sys
 from setuptools import setup, find_packages
 
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
 version = '0.5.0'
+
+INSTALL_REQUIRES = [
+    'getpaid.core',
+    'setuptools',
+    'zc.authorizedotnet',
+    'zope.interface',
+    'zope.component',
+    'zope.annotation',
+    'M2Crypto'
+    ],
+
+if sys.version_info[:3] < (2, 5, 0):
+    # elementtree is only required before Python 2.5
+    INSTALL_REQUIRES.append('elementtree')
 
 setup(
     name='getpaid.authorizedotnet',
@@ -52,13 +66,6 @@ setup(
     package_dir={'':'src'},
     namespace_packages=['getpaid'],
     include_package_data=True,
-    install_requires = [ 'getpaid.core',
-                         'setuptools',
-                         'zc.authorizedotnet',
-                         'zope.interface',
-                         'zope.component',
-                         'zope.annotation',
-                         'M2Crypto'
-                         ],
+    install_requires = INSTALL_REQUIRES,
     zip_safe = False,
     )
