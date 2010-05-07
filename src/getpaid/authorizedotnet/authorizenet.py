@@ -50,7 +50,7 @@ LAST_FOUR = "getpaid.authorizedotnet.cc_last_four"
 APPROVAL_KEY = "getpaid.authorizedotnet.approval_code"
 
 class AuthorizeNetAdapter(object):
-    interface.implements( interfaces.IPaymentProcessor )
+    interface.implements( interfaces.IPaymentProcessor, interfaces.IRecurringPaymentProcessor )
 
     options_interface = IAuthorizeNetOptions
 
