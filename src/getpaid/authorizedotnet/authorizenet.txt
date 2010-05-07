@@ -107,7 +107,7 @@ information which is passed to ``authorize`` but not ``capture``.
   >>> cart2 = cart.ShoppingCart()
   >>> cart2['abc'] = abc = item.RecurringLineItem()
   >>> abc.cost = 22.20; abc.name = 'abc'; abc.quantity = 1
-  >>> abc.frequency = 1; abc.total_occurrences = 3; abc.unit = 'months'
+  >>> abc.interval = 1; abc.total_occurrences = 3; abc.unit = 'months'
   >>> order2.shopping_cart = cart2
   >>> order2._order_id = 'recur%s' % int(time.time())
   >>> authnet.authorize(order2, payment) == interfaces.keys.results_success
