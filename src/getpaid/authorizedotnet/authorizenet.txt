@@ -22,11 +22,13 @@ Use the login Authorize.net)
 
 We also need an order that we want to process payments for.
 
+  >>> import time
   >>> from getpaid.core import order, item, cart, options, interfaces, payment
   >>> my_cart = cart.ShoppingCart()
   >>> my_cart['abc'] = abc = item.LineItem()
   >>> abc.cost = 22.20; abc.name = 'abc'; abc.quantity = 3
   >>> order = order.Order()
+  >>> order.setOrderId('test%s' % int(time.time()))
   >>> order.shopping_cart = my_cart
   >>> order.contact_information = contact = payment.ContactInformation()
   >>> contact.name = 'Harvey Frank'
@@ -57,20 +59,33 @@ Authorizing an Order
 Authorization confirms that an order may be processed using the given billing
 information.
 
-    >>> from getpaid.authorizedotnet.authorizenet import AuthorizeNetAdapter
-    >>> authnet = AuthorizeNetAdapter(DummyAuthContext())
-    >>> authnet.authorize(order, payment) == interfaces.keys.results_success
-    True
+  >>> from getpaid.authorizedotnet.authorizenet import AuthorizeNetAdapter
+  >>> authnet = AuthorizeNetAdapter(DummyAuthContext())
+  >>> authnet.authorize(order, payment) == interfaces.keys.results_success
+  True
 
-
-
-Capturing/Charing an Order
+Capturing/Charging an Order
 --------------------------
+
+Capturing an order tells Authorize.net to queue payment for settlement. (Actual
+settlement happens in a daily batch process.)
+
+  >>> authnet.capture(order, order.getTotalPrice()) == interfaces.keys.results_success
+  True
+
 
 Refunding an Order
 ------------------
 
+Refunding an order tells Authorize.net to return the payment to the customer.
+
+Refunds cannot be issued until the original payment has been captured and settled,
+so we don't expect this to succeed in the test.
+
+  >>> authnet.refund(order, order.getTotalPrice())
+  'The referenced transaction does not meet the criteria for issuing a credit.'
 
 Voiding an Order
 ----------------
+
 
