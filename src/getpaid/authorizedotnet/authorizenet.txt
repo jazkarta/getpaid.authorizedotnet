@@ -89,3 +89,54 @@ Voiding an Order
 ----------------
 
 
+Orders with recurring line items
+--------------------------------
+
+If an order whose cart contains a recurring line item is authorized, it will
+result in the creation of a subscription-based payment using Authorize.net's
+Automated Recurring Billing (ARB) API.  The subscriptionId will be recorded
+on the order as its transaction ID.
+
+Note that the creation of the subscription happens during the call to
+``authorize``, not ``capture``, because it needs access to the billing
+information which is passed to ``authorize`` but not ``capture``.
+
+  >>> import copy
+  >>> from zope.annotation.interfaces import IAnnotations
+  >>> order2 = copy.deepcopy(order)
+  >>> cart2 = cart.ShoppingCart()
+  >>> cart2['abc'] = abc = item.RecurringLineItem()
+  >>> abc.cost = 22.20; abc.name = 'abc'; abc.quantity = 1
+  >>> abc.frequency = 1; abc.total_occurrences = 3; abc.unit = 'months'
+  >>> order2.shopping_cart = cart2
+  >>> order2._order_id = 'recur%s' % int(time.time())
+  >>> authnet.authorize(order2, payment) == interfaces.keys.results_success
+  True
+  >>> subscriptionId = IAnnotations(order2)[interfaces.keys.processor_txn_id]
+  >>> subscriptionId is not None
+  True
+
+In the case of a recurring order ``capture`` is basically a no-op, but still
+needs to succeed, because it will get called by the order workflow.
+
+  >>> authnet.capture(order2, order2.getTotalPrice()) == interfaces.keys.results_success
+  True
+
+Orders with multiple recurring line items, or with a mixture of recurring and
+non-recurring line items, are not currently supported.
+
+A recurring order will first be authorized using the standard AIM API,
+to make sure that valid CC info was provided.
+
+  >>> payment2 = copy.deepcopy(payment)
+  >>> payment2.credit_card = '1111111111111'
+  >>> authnet.authorize(order2, payment2)
+  'The credit card number is invalid.'
+
+Canceling a recurring payment subscription
+------------------------------------------
+
+If an order has a subscriptionId, its subscription can be canceled.
+
+  >>> authnet.cancel_subscription(order2) == interfaces.keys.results_success
+  True
