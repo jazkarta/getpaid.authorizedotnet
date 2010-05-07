@@ -136,7 +136,6 @@ class AuthorizeNetAdapter(object):
         return result.response_reason
 
     def capture( self, order, amount ):
-        import pdb ; pdb.set_trace( )
         if interfaces.IRecurringLineItem.providedBy(order.shopping_cart.values()[0]):
             pass
             
