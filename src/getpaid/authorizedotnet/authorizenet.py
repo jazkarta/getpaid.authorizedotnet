@@ -66,24 +66,6 @@ class AuthorizeNetAdapter(object):
     def __init__(self, context):
         self.context = context
     
-    def is_recurring_order(self, order):
-        recurring = 0
-        non_recurring = 0
-        for i in order.shopping_cart.values():
-            if interfaces.IRecurringLineItem.providedBy(i):
-                recurring += 1
-            else:
-                non_recurring += 1
-        
-        if recurring > 0 and non_recurring > 0:
-            raise Exception('Carts containing both recurring and non-recurring items '
-                            'are not supported.')
-        elif recurring > 1:
-            raise Exception('Carts containing multiple recurring items not supported.')
-        elif recurring == 1:
-            return True
-        return False
-
     def authorize(self, order, payment):
         billing = order.billing_address
         amount = order.getTotalPrice()
@@ -136,7 +118,7 @@ class AuthorizeNetAdapter(object):
         #   result.trans_id
 
         if result.response == SUCCESS:
-            if self.is_recurring_order(order):
+            if order.shopping_cart.is_recurring():
                 # if a recurring order, then we need to void the transaction
                 # (we do the authorization to make sure we have valid CC info)
                 # and create a subscription instead
@@ -160,7 +142,7 @@ class AuthorizeNetAdapter(object):
             
         annotations = IAnnotations( order )
         trans_id = annotations[ interfaces.keys.processor_txn_id ]
-        if self.is_recurring_order(order):
+        if order.shopping_cart.is_recurring():
             # creation of subscriptions for recurring orders happens in ``authorize``
             success = True
         else:
@@ -183,7 +165,7 @@ class AuthorizeNetAdapter(object):
     
     def refund( self, order, amount ):
 
-        if self.is_recurring_order(order):
+        if order.shopping_cart.is_recurring():
             return 'Refunds for recurring orders are not currently supported.'
 
         annotations = IAnnotations( order )
@@ -205,7 +187,7 @@ class AuthorizeNetAdapter(object):
         return result.response_reason
     
     def create_subscription(self, order, payment):
-        if not self.is_recurring_order(order):
+        if not order.shopping_cart.is_recurring():
             return 'Order does not have a recurring line item.'
         item = order.shopping_cart.values()[0]
 
@@ -279,7 +261,7 @@ class AuthorizeNetAdapter(object):
 
     
     def cancel_subscription(self, order):
-        if not self.is_recurring_order(order):
+        if not order.shopping_cart.is_recurring():
             return 'Order does not have a recurring line item.'
         
         annotations = IAnnotations(order)
