@@ -61,6 +61,8 @@ It returns a dictionary which contains details about the transaction.
     '1234'
     >>> result['messages']['resultCode']
     'Ok'
+    >>> result['messages']['message']['code']
+    '123456'
     >>> result['messages']['message']['text']
     'Successful.'
     >>> subscriptionId = result['subscriptionId']

@@ -154,7 +154,10 @@ class AuthorizeNetAdapter(object):
         return result.response_reason
 
     def capture( self, order, amount ):
-
+        import pdb ; pdb.set_trace( )
+        if interfaces.IRecurringLineItem.providedBy(order.shopping_cart.values()[0]):
+            pass
+            
         annotations = IAnnotations( order )
         trans_id = annotations[ interfaces.keys.processor_txn_id ]
         if self.is_recurring_order(order):
@@ -222,7 +225,7 @@ class AuthorizeNetAdapter(object):
                 'name': order_id,
                 'paymentSchedule': {
                     'interval': {
-                        'length': item.frequency,
+                        'length': item.interval,
                         'unit': item.unit, },
                     'startDate': today,
                     'totalOccurrences': item.total_occurrences,
