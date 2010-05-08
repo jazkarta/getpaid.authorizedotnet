@@ -66,6 +66,23 @@ class AuthorizeNetAdapter(object):
     def __init__(self, context):
         self.context = context
     
+    def _fix_date(self, d):
+        res = ''
+        if hasattr(d, 'strftime'):
+            res = d.strftime('%m%y')
+        else:
+            # If cc_expiration is not of type date, then it should be 
+            # a string like this: '2011-08-03 00:00'
+            # This is a bug in getpaid.formgen's single page checkout
+            # and the correct fix is to swap out it's expiration date
+            # widget with one that returns a date.
+            yearMonthDay = d.split(' ')[0].split('-')
+            _date = date(int(yearMonthDay[0]), 
+                         int(yearMonthDay[1]), 
+                         int(yearMonthDay[2]))
+            res = _date.strftime('%m%y')
+        return res
+    
     def authorize(self, order, payment):
         billing = order.billing_address
         amount = order.getTotalPrice()
@@ -75,21 +92,8 @@ class AuthorizeNetAdapter(object):
                          ';  Contact Phone: ' + contact.phone_number  + \
                          ';  Contact Email: ' + contact.email
 
-        expiration_date = ''
-        if hasattr(payment.cc_expiration, 'strftime'):
-            expiration_date = payment.cc_expiration.strftime('%m%y')
-        else:
-            # If cc_expiration is not of type date, then it should be 
-            # a string like this: '2011-08-03 00:00'
-            # This is a bug in getpaid.formgen's single page checkout
-            # and the correct fix is to swap out it's expiration date
-            # widget with one that returns a date.
-            yearMonthDay = payment.cc_expiration.split(' ')[0].split('-')
-            _date = date(int(yearMonthDay[0]), 
-                         int(yearMonthDay[1]), 
-                         int(yearMonthDay[2]))
-            expiration_date = _date.strftime('%m%y')
-            
+        expiration_date = self._fix_date(payment.cc_expiration)
+        
         options = dict(
             amount = str(amount),
             card_num = payment.credit_card,
@@ -220,7 +224,7 @@ class AuthorizeNetAdapter(object):
                 'payment': {
                     'creditCard': {
                         'cardNumber': payment.credit_card,
-                        'expirationDate': payment.cc_expiration.strftime('%Y-%m'),
+                        'expirationDate': self._fix_date(payment.cc_expiration),
                         'cardCode': payment.cc_cvc, },
                     },
                 'customer': {
