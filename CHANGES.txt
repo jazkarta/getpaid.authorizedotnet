@@ -2,6 +2,13 @@
 CHANGES
 =======
 
+0.5.0 (unreleased)
+------------------
+
+- Added support for Authorize.net's Automated Recurring Billing (API)
+  for managing subscription-based payments.
+  [davisagli]
+
 0.4.0 (2010-04-07)
 ------------------
 

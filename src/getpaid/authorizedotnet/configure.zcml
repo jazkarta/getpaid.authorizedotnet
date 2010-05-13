@@ -1,6 +1,8 @@
 <configure xmlns="http://namespaces.zope.org/zope"
 	   xmlns:five="http://namespaces.zope.org/five">
 
+  <include package="zope.annotation"/>
+
   <adapter
      for="getpaid.core.interfaces.IStore"
      provides=".interfaces.IAuthorizeNetOptions"

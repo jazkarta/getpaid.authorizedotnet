@@ -29,13 +29,16 @@ else return an error message so higher levels can interpret/record/notify user/e
 $Id: $
 """
 
+from time import strftime, gmtime
+
 from zope import interface
 from zope.annotation.interfaces import IAnnotations
 
 from zc.authorizedotnet.processing import CcProcessor
+from getpaid.authorizedotnet.subscription import ARBProcessor
 from getpaid.core import interfaces
 
-from interfaces import IAuthorizeNetOptions
+from getpaid.authorizedotnet.interfaces import IAuthorizeNetOptions
 
 from datetime import date
 
@@ -47,7 +50,7 @@ LAST_FOUR = "getpaid.authorizedotnet.cc_last_four"
 APPROVAL_KEY = "getpaid.authorizedotnet.approval_code"
 
 class AuthorizeNetAdapter(object):
-    interface.implements( interfaces.IPaymentProcessor )
+    interface.implements( interfaces.IPaymentProcessor, interfaces.IRecurringPaymentProcessor )
 
     options_interface = IAuthorizeNetOptions
 
@@ -55,33 +58,42 @@ class AuthorizeNetAdapter(object):
         Production = "secure.authorize.net:443",
         Test = "test.authorize.net:443"
         )
+    _arb_sites = dict(
+        Production = "api.authorize.net:443",
+        Test = "apitest.authorize.net:443"
+        )
 
     def __init__(self, context):
         self.context = context
-
-    def authorize(self, order, payment):
-
-        billing = order.billing_address
-        amount = order.getTotalPrice()
-        contact = order.contact_information
-        order_id = order.getOrderId()
-        contact_fields = 'Contact Name: ' + contact.name + ';  Contact Phone: ' + contact.phone_number  + ';  Contact Email: ' + contact.email
-
-        expiration_date = ''
-        if hasattr(payment.cc_expiration, 'strftime'):
-            expiration_date = payment.cc_expiration.strftime('%m%y')
+    
+    def _fix_date(self, d):
+        res = ''
+        if hasattr(d, 'strftime'):
+            res = d.strftime('%m%y')
         else:
             # If cc_expiration is not of type date, then it should be 
             # a string like this: '2011-08-03 00:00'
             # This is a bug in getpaid.formgen's single page checkout
             # and the correct fix is to swap out it's expiration date
             # widget with one that returns a date.
-            yearMonthDay = payment.cc_expiration.split(' ')[0].split('-')
+            yearMonthDay = d.split(' ')[0].split('-')
             _date = date(int(yearMonthDay[0]), 
                          int(yearMonthDay[1]), 
                          int(yearMonthDay[2]))
-            expiration_date = _date.strftime('%m%y')
-            
+            res = _date.strftime('%m%y')
+        return res
+    
+    def authorize(self, order, payment):
+        billing = order.billing_address
+        amount = order.getTotalPrice()
+        contact = order.contact_information
+        order_id = order.getOrderId()
+        contact_fields = 'Contact Name: ' + contact.name + \
+                         ';  Contact Phone: ' + contact.phone_number  + \
+                         ';  Contact Email: ' + contact.email
+
+        expiration_date = self._fix_date(payment.cc_expiration)
+        
         options = dict(
             amount = str(amount),
             card_num = payment.credit_card,
@@ -95,7 +107,6 @@ class AuthorizeNetAdapter(object):
             invoice_num = order_id,
             description = contact_fields
             )
-
 
         result = self.processor.authorize( **options )
         
@@ -111,40 +122,51 @@ class AuthorizeNetAdapter(object):
         #   result.trans_id
 
         if result.response == SUCCESS:
-            annotation = IAnnotations( order )
-            annotation[ interfaces.keys.processor_txn_id ] = result.trans_id
-            annotation[ LAST_FOUR ] = payment.credit_card[-4:]
-            annotation[ APPROVAL_KEY ] = result.approval_code
-
-            order.user_payment_info_trans_id = result.trans_id
+            if order.shopping_cart.is_recurring():
+                # if a recurring order, then we need to void the transaction
+                # (we do the authorization to make sure we have valid CC info)
+                # and create a subscription instead
+                self.processor.void(trans_id = result.trans_id)
+                return self.create_subscription(order, payment)
+            else:
+                annotation = IAnnotations( order )
+                annotation[ interfaces.keys.processor_txn_id ] = result.trans_id
+                annotation[ LAST_FOUR ] = payment.credit_card[-4:]
+                annotation[ APPROVAL_KEY ] = result.approval_code
+                order.user_payment_info_trans_id = result.trans_id
 
             return interfaces.keys.results_success
 
         return result.response_reason
 
     def capture( self, order, amount ):
-
         annotations = IAnnotations( order )
         trans_id = annotations[ interfaces.keys.processor_txn_id ]
-        approval_code = annotations[ APPROVAL_KEY ]
-        
-        result = self.processor.captureAuthorized(
-            amount = str(amount),
-            trans_id = trans_id,
-            approval_code = approval_code,
-            )
+        if order.shopping_cart.is_recurring():
+            # creation of subscriptions for recurring orders happens in ``authorize``
+            success = True
+        else:
+            approval_code = annotations[ APPROVAL_KEY ]
+            result = self.processor.captureAuthorized(
+                amount = str(amount),
+                trans_id = trans_id,
+                approval_code = approval_code,
+                )
+            success = result.response == SUCCESS
 
-        if result.response == SUCCESS:
-            annotation = IAnnotations( order )
-            if annotation.get( interfaces.keys.capture_amount ) is None:
-                annotation[ interfaces.keys.capture_amount ] = amount
+        if success:
+            if annotations.get( interfaces.keys.capture_amount ) is None:
+                annotations[ interfaces.keys.capture_amount ] = amount
             else:
-                annotation[ interfaces.keys.capture_amount ] += amount            
+                annotations[ interfaces.keys.capture_amount ] += amount
             return interfaces.keys.results_success
 
         return result.response_reason
     
     def refund( self, order, amount ):
+
+        if order.shopping_cart.is_recurring():
+            return 'Refunds for recurring orders are not currently supported.'
 
         annotations = IAnnotations( order )
         trans_id = annotations[ interfaces.keys.processor_txn_id ]
@@ -159,10 +181,87 @@ class AuthorizeNetAdapter(object):
         if result.response == SUCCESS:
             annotation = IAnnotations( order )
             if annotation.get( interfaces.keys.capture_amount ) is not None:
-                annotation[ interfaces.keys.capture_amount ] -= amount                        
+                annotation[ interfaces.keys.capture_amount ] -= amount
             return interfaces.keys.results_success
         
         return result.response_reason
+    
+    def create_subscription(self, order, payment):
+        if not order.shopping_cart.is_recurring():
+            return 'Order does not have a recurring line item.'
+        item = order.shopping_cart.values()[0]
+
+        billing = order.billing_address
+        amount = order.getTotalPrice()
+        contact = order.contact_information
+        order_id = order.getOrderId()
+        contact_fields = 'Contact Name: ' + contact.name + \
+                         ';  Contact Phone: ' + contact.phone_number  + \
+                         ';  Contact Email: ' + contact.email
+
+        today = strftime("%Y-%m-%d", gmtime())
+
+        options = dict(
+            refId = order_id,
+            subscription = {
+                'name': order_id,
+                'paymentSchedule': {
+                    'interval': {
+                        'length': item.interval,
+                        'unit': item.unit, },
+                    'startDate': today,
+                    'totalOccurrences': item.total_occurrences,
+                    'trialOccurrences': 0, },
+                'order': {
+                    'invoiceNumber': order_id,
+                    'description': contact_fields,
+                    },
+                'amount': str(amount),
+                'trialAmount': '0',
+                'payment': {
+                    'creditCard': {
+                        'cardNumber': payment.credit_card,
+                        'expirationDate': self._fix_date(payment.cc_expiration),
+                        'cardCode': payment.cc_cvc, },
+                    },
+                'customer': {
+                    'email': contact.email,
+                    'phoneNumber': contact.phone_number,
+                    },
+                'billTo': {
+                    'firstName': payment.name_on_card.rsplit(' ', 1)[0],
+                    'lastName': payment.name_on_card.rsplit(' ', 1)[1],
+                    'address': billing.bill_first_line,
+                    'city': billing.bill_city,
+                    'state': billing.bill_state,
+                    'zip': billing.bill_postal_code },
+                },
+            )
+        result = self.arb_processor.create( **options )
+
+        if result['messages']['resultCode'] == 'Ok':
+            annotation = IAnnotations( order )
+            annotation[ interfaces.keys.processor_txn_id ] = result['subscriptionId']
+            annotation[ LAST_FOUR ] = payment.credit_card[-4:]
+            order.user_payment_info_trans_id = result['subscriptionId']
+            return interfaces.keys.results_success
+
+        return result['messages']['message']['text']
+
+    
+    def cancel_subscription(self, order):
+        if not order.shopping_cart.is_recurring():
+            return 'Order does not have a recurring line item.'
+        
+        annotations = IAnnotations(order)
+        subscriptionId = annotations[interfaces.keys.processor_txn_id]
+        
+        result = self.arb_processor.cancel(subscriptionId = subscriptionId)
+        if result['messages']['resultCode'] == 'Ok':
+            del annotations[interfaces.keys.processor_txn_id]
+            return interfaces.keys.results_success
+        
+        return result['messages']['message']['text']
     
     @property
     def processor( self ):
@@ -172,3 +271,12 @@ class AuthorizeNetAdapter(object):
                          login=options.merchant_id,
                          key=options.merchant_key)
         return cc
+
+    @property
+    def arb_processor(self):
+        options = IAuthorizeNetOptions(self.context)
+        server = self._arb_sites.get(options.server_url)
+        arb = ARBProcessor(server=server,
+                           login=options.merchant_id,
+                           key=options.merchant_key)
+        return arb
