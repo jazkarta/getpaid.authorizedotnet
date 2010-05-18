@@ -17,9 +17,9 @@ def read(*rnames):
 version = '0.5.0'
 
 INSTALL_REQUIRES = [
-    'getpaid.core',
+    'getpaid.core >= 0.9.0',
     'setuptools',
-    'zc.authorizedotnet',
+    'zc.authorizedotnet >= 1.3.1',
     'zope.interface',
     'zope.component',
     'zope.annotation',
