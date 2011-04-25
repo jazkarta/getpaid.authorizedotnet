@@ -1,3 +1,4 @@
+import os
 import httplib
 try:
     from xml.etree import ElementTree
@@ -62,8 +63,10 @@ class ARBConnection(object):
             server, port = self.server.split(':')
             conn = httplib.HTTPConnection(server, port)
         else:
+            cert_file = os.path.join(os.path.dirname(__file__), "certs.pem")
             conn = zc.ssl.HTTPSConnection(self.server,
-                                          timeout=self.timeout)
+                                          timeout=self.timeout,
+                                          cert_file=cert_file)
         conn.putrequest('POST', '/xml/v1/request.api')
         conn.putheader('content-type', 'text/xml')
         conn.putheader('content-length', len(xml))
