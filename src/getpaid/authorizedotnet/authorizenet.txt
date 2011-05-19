@@ -65,7 +65,7 @@ information.
   True
 
 Capturing/Charging an Order
---------------------------
+---------------------------
 
 Capturing an order tells Authorize.net to queue payment for settlement. (Actual
 settlement happens in a daily batch process.)
