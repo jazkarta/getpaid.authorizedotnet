@@ -14,7 +14,7 @@ from setuptools import setup, find_packages
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '0.5.1'
+version = '0.5.2dev'
 
 INSTALL_REQUIRES = [
     'getpaid.core >= 0.9.0',
@@ -46,9 +46,6 @@ setup(
         read('src', 'getpaid', 'authorizedotnet', 'authorizenet.txt')
         + '\n' +
         read('src', 'getpaid', 'authorizedotnet', 'subscription.txt')
-        + '\n' +
-        'Download\n'
-        '**********************\n'
         ),
     classifiers=[
         'Framework :: Plone',
