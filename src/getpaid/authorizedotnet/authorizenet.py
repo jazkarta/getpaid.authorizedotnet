@@ -97,6 +97,7 @@ class AuthorizeNetAdapter(object):
         options = dict(
             amount = str(amount),
             card_num = payment.credit_card,
+            card_code = payment.cc_cvc,
             last_name = payment.name_on_card,
             phone     = payment.bill_phone_number,
             exp_date = expiration_date,
