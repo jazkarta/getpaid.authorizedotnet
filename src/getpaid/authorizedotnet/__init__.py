@@ -25,6 +25,8 @@
 $Id: $
 """
 
+import patch
+
 import interfaces
 from getpaid.core.options import PersistentOptions
 

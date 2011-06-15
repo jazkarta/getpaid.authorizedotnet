@@ -5,6 +5,10 @@ CHANGES
 0.5.2 (unreleased)
 ------------------
 
+- Patch zc.authorizedotnet to make sure that the correct root certificates
+  are checked.
+  [davisagli]
+
 0.5.1 (2011-05-18)
 ------------------
 
