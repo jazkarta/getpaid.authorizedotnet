@@ -43,3 +43,11 @@ class IAuthorizeNetOptions(interfaces.IPaymentProcessorOptions):
     merchant_id = schema.ASCIILine( title=u"API Login Id" )
     merchant_key = schema.ASCIILine( title=u"Transaction Key" )
         
+    send_test_requests = schema.Bool(
+        title = u'Enable test requests',
+        description = u'If checked, the x_test_request flag will be turned on if '
+                      u'the credit card is one of the following known test cards: '
+                      u'Visa 4007000000027, Visa 4012888818888, AmEx 370000000000002, '
+                      u'Discover 6011000000000012. Note: This does not work with '
+                      u'Automated Recurring Billing (ARB) subscriptions.'
+        )

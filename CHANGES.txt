@@ -5,6 +5,11 @@ CHANGES
 0.5.2 (unreleased)
 ------------------
 
+- Add option to enable setting the x_test_request flag when one of the known
+  test credit card numbers is used.  This makes it possible to test the
+  integration even if the processor is using the production server.
+  [davisagli]
+
 - Patch zc.authorizedotnet to make sure that the correct root certificates
   are checked.
   [davisagli]

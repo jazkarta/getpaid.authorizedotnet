@@ -2,13 +2,33 @@ import os.path
 import httplib
 import zc.ssl
 
+try:
+    from zope.site.hooks import getSite
+except ImportError:
+    from zope.app.component.hooks import getSite
+
+from getpaid.authorizedotnet.interfaces import IAuthorizeNetOptions
+
 from zc.authorizedotnet.processing import AuthorizeNetConnection
 from zc.authorizedotnet.processing import TransactionResult
 
+
+TEST_CARDS = (
+    '4222222222222',
+    '4007000000027',
+    '4012888818888',
+    '370000000000002',
+    '6011000000000012',
+    )
+
+
 def sendTransaction(self, **kws):
+    site = getSite()
+    options = IAuthorizeNetOptions(site)
+    
     # if the card number passed in is the "generate an error" card...
-    if kws.get('card_num') == '4222222222222':
-        # ... turn on test mode (that's the only time that card works)
+    if options.send_test_requests and kws.get('card_num') in TEST_CARDS:
+        # ... turn on test mode
         kws['test_request'] = 'TRUE'
 
     body = self.formatRequest(kws)
