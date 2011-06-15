@@ -46,8 +46,10 @@ def sendTransaction(self, **kws):
     conn.send(body)
 
     response = conn.getresponse()
-    fields = response.read().split(self.delimiter)
+    full_response = response.read()
+    fields = full_response.split(self.delimiter)
     result = TransactionResult(fields)
+    result.full_response = full_response
     
     if (self.salt is not None
     and not result.validateHash(self.login, self.salt)):

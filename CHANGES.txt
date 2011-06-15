@@ -2,8 +2,12 @@
 CHANGES
 =======
 
-0.5.2 (unreleased)
+0.6.0 (unreleased)
 ------------------
+
+- Record the response received from authorize.net on an annotation on the
+  order, for debugging purposes.
+  [davisagli]
 
 - Add option to enable setting the x_test_request flag when one of the known
   test credit card numbers is used.  This makes it possible to test the

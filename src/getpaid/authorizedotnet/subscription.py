@@ -75,7 +75,9 @@ class ARBConnection(object):
 
         response = conn.getresponse()
         root = ElementTree.parse(response).getroot()
-        return dictify_etree_node(root)
+        result = dictify_etree_node(root)
+        result['full_response'] = response
+        return result
 
 
 class ARBProcessor(object):

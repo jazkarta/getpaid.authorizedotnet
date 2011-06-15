@@ -44,10 +44,10 @@ from datetime import date
 
 SUCCESS = 'approved'
 
-# needed for refunds
 LAST_FOUR = "getpaid.authorizedotnet.cc_last_four"
-
 APPROVAL_KEY = "getpaid.authorizedotnet.approval_code"
+FULL_RESPONSE = "getpaid.authorizedotnet.full_response"
+
 
 class AuthorizeNetAdapter(object):
     interface.implements( interfaces.IPaymentProcessor, interfaces.IRecurringPaymentProcessor )
@@ -134,6 +134,8 @@ class AuthorizeNetAdapter(object):
                 annotation[ interfaces.keys.processor_txn_id ] = result.trans_id
                 annotation[ LAST_FOUR ] = payment.credit_card[-4:]
                 annotation[ APPROVAL_KEY ] = result.approval_code
+                if hasattr(result, 'full_response'):
+                    annotation[ FULL_RESPONSE ] = result.full_response
                 order.user_payment_info_trans_id = result.trans_id
 
             return interfaces.keys.results_success
@@ -183,6 +185,8 @@ class AuthorizeNetAdapter(object):
             annotation = IAnnotations( order )
             if annotation.get( interfaces.keys.capture_amount ) is not None:
                 annotation[ interfaces.keys.capture_amount ] -= amount
+            if hasattr(result, 'full_response'):
+                annotation[FULL_RESPONSE] = result.full_response
             return interfaces.keys.results_success
         
         return result.response_reason
@@ -244,6 +248,8 @@ class AuthorizeNetAdapter(object):
             annotation = IAnnotations( order )
             annotation[ interfaces.keys.processor_txn_id ] = result['subscriptionId']
             annotation[ LAST_FOUR ] = payment.credit_card[-4:]
+            if result.get('full_response'):
+                annotation[FULL_RESPONSE] = result['full_response']
             order.user_payment_info_trans_id = result['subscriptionId']
             return interfaces.keys.results_success
 
