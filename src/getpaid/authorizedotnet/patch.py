@@ -3,9 +3,9 @@ import httplib
 import zc.ssl
 
 try:
-    from zope.site.hooks import getSite
-except ImportError:
     from zope.app.component.hooks import getSite
+except ImportError:
+    from zope.site.hooks import getSite
 
 from getpaid.authorizedotnet.interfaces import IAuthorizeNetOptions
 
