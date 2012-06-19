@@ -2,6 +2,13 @@
 CHANGES
 =======
 
+0.6.2 (2012-06-19)
+------------------
+
+- If Authorize.net held the authorization for review, return a response
+  indicating async payment processing.
+  [davisagli]
+
 0.6.1 (2011-06-21)
 ------------------
 

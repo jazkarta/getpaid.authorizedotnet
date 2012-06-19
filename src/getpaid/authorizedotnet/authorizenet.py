@@ -43,6 +43,7 @@ from getpaid.authorizedotnet.interfaces import IAuthorizeNetOptions
 from datetime import date
 
 SUCCESS = 'approved'
+HELD = 'held for review'
 
 LAST_FOUR = "getpaid.authorizedotnet.cc_last_four"
 APPROVAL_KEY = "getpaid.authorizedotnet.approval_code"
@@ -139,6 +140,8 @@ class AuthorizeNetAdapter(object):
                 order.user_payment_info_trans_id = result.trans_id
 
             return interfaces.keys.results_success
+        elif result.response == HELD:
+            return interfaces.keys.results_async
 
         return result.response_reason
 
