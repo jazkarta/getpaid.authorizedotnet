@@ -94,7 +94,7 @@ class AuthorizeNetAdapter(object):
                          ';  Contact Email: ' + contact.email
 
         expiration_date = self._fix_date(payment.cc_expiration)
-        
+
         options = dict(
             amount = str(amount),
             card_num = payment.credit_card,
@@ -108,7 +108,15 @@ class AuthorizeNetAdapter(object):
             zip = billing.bill_postal_code,
             invoice_num = order_id,
             description = contact_fields
+            customer_ip = ip_address
             )
+
+        # Pass customer IP address for use by Fraud Detection Suite
+        try:
+            request = context.REQUEST
+            options['customer_ip'] = request.get('HTTP_X_FORWARDED_FOR') or request.get('REMOTE_ADDR')
+        except AttributeError:
+            pass
 
         result = self.processor.authorize( **options )
         
