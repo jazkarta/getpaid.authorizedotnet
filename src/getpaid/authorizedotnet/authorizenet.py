@@ -108,7 +108,6 @@ class AuthorizeNetAdapter(object):
             zip = billing.bill_postal_code,
             invoice_num = order_id,
             description = contact_fields
-            customer_ip = ip_address
             )
 
         # Pass customer IP address for use by Fraud Detection Suite
