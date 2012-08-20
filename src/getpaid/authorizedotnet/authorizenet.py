@@ -112,7 +112,7 @@ class AuthorizeNetAdapter(object):
 
         # Pass customer IP address for use by Fraud Detection Suite
         try:
-            request = context.REQUEST
+            request = self.context.REQUEST
             options['customer_ip'] = request.get('HTTP_X_FORWARDED_FOR') or request.get('REMOTE_ADDR')
         except AttributeError:
             pass
