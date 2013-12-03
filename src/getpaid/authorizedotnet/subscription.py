@@ -73,8 +73,8 @@ class ARBConnection(object):
         conn.endheaders()
         conn.send(xml)
 
-        response = conn.getresponse()
-        root = ElementTree.parse(response).getroot()
+        response = conn.getresponse().read()
+        root = ElementTree.fromstring(response)
         result = dictify_etree_node(root)
         result['full_response'] = response
         return result
