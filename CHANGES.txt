@@ -2,6 +2,13 @@
 CHANGES
 =======
 
+0.6.7 (unreleased)
+------------------
+
+- Update root CA certs to successfully validate the new certificates being used by
+  authorize.net as of 2015-05-27.
+  [davisagli]
+
 0.6.6 (2013-12-02)
 ------------------
 
