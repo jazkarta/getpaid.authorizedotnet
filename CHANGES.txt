@@ -2,7 +2,11 @@
 CHANGES
 =======
 
-0.6.7 (unreleased)
+0.6.8 (unreleased)
+------------------
+
+
+0.6.7 (2015-05-29)
 ------------------
 
 - Update root CA certs to successfully validate the new certificates being used by
