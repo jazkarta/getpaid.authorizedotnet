@@ -14,7 +14,7 @@ from setuptools import setup, find_packages
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '0.6.6'
+version = '0.6.7'
 
 INSTALL_REQUIRES = [
     'getpaid.core >= 0.9.0',
