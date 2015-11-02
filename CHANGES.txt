@@ -4,7 +4,8 @@ CHANGES
 
 0.6.8 (unreleased)
 ------------------
-
+- Update transaction URLs to connect through Akamai.
+  [fulv]
 
 0.6.7 (2015-05-29)
 ------------------

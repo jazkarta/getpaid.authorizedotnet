@@ -56,34 +56,34 @@ class AuthorizeNetAdapter(object):
     options_interface = IAuthorizeNetOptions
 
     _sites = dict(
-        Production = "secure.authorize.net:443",
+        Production = "secure2.authorize.net:443",
         Test = "test.authorize.net:443"
         )
     _arb_sites = dict(
-        Production = "api.authorize.net:443",
+        Production = "api2.authorize.net:443",
         Test = "apitest.authorize.net:443"
         )
 
     def __init__(self, context):
         self.context = context
-    
+
     def _fix_date(self, d):
         res = ''
         if hasattr(d, 'strftime'):
             res = d.strftime('%m%y')
         else:
-            # If cc_expiration is not of type date, then it should be 
+            # If cc_expiration is not of type date, then it should be
             # a string like this: '2011-08-03 00:00'
             # This is a bug in getpaid.formgen's single page checkout
             # and the correct fix is to swap out it's expiration date
             # widget with one that returns a date.
             yearMonthDay = d.split(' ')[0].split('-')
-            _date = date(int(yearMonthDay[0]), 
-                         int(yearMonthDay[1]), 
+            _date = date(int(yearMonthDay[0]),
+                         int(yearMonthDay[1]),
                          int(yearMonthDay[2]))
             res = _date.strftime('%m%y')
         return res
-    
+
     def authorize(self, order, payment):
         billing = order.billing_address
         amount = order.getTotalPrice()
@@ -118,7 +118,7 @@ class AuthorizeNetAdapter(object):
             pass
 
         result = self.processor.authorize( **options )
-        
+
         # result.response may be
         # - approved
         # - error
@@ -175,7 +175,7 @@ class AuthorizeNetAdapter(object):
             return interfaces.keys.results_success
 
         return result.response_reason
-    
+
     def refund( self, order, amount ):
 
         if order.shopping_cart.is_recurring():
@@ -184,13 +184,13 @@ class AuthorizeNetAdapter(object):
         annotations = IAnnotations( order )
         trans_id = annotations[ interfaces.keys.processor_txn_id ]
         last_four = annotations[ LAST_FOUR ]
-        
+
         result = self.processor.credit(
             amount = str( amount ),
             trans_id = trans_id,
             card_num = last_four
             )
-        
+
         if result.response == SUCCESS:
             annotation = IAnnotations( order )
             if annotation.get( interfaces.keys.capture_amount ) is not None:
@@ -198,9 +198,9 @@ class AuthorizeNetAdapter(object):
             if hasattr(result, 'full_response'):
                 annotation[FULL_RESPONSE] = result.full_response
             return interfaces.keys.results_success
-        
+
         return result.response_reason
-    
+
     def create_subscription(self, order, payment):
         if not order.shopping_cart.is_recurring():
             return 'Order does not have a recurring line item.'
@@ -265,21 +265,21 @@ class AuthorizeNetAdapter(object):
 
         return result['messages']['message']['text']
 
-    
+
     def cancel_subscription(self, order):
         if not order.shopping_cart.is_recurring():
             return 'Order does not have a recurring line item.'
-        
+
         annotations = IAnnotations(order)
         subscriptionId = annotations[interfaces.keys.processor_txn_id]
-        
+
         result = self.arb_processor.cancel(subscriptionId = subscriptionId)
         if result['messages']['resultCode'] == 'Ok':
             del annotations[interfaces.keys.processor_txn_id]
             return interfaces.keys.results_success
-        
+
         return result['messages']['message']['text']
-    
+
     @property
     def processor( self ):
         options = IAuthorizeNetOptions(self.context)
