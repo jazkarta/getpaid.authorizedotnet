@@ -2,8 +2,9 @@
 CHANGES
 =======
 
-0.6.8 (unreleased)
+0.6.8 (2015-11-28)
 ------------------
+
 - Update transaction URLs to connect through Akamai.
   [fulv]
 
