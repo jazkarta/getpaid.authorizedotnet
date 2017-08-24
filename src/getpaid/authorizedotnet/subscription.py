@@ -1,11 +1,9 @@
-import os
 import httplib
 try:
     from xml.etree import ElementTree
 except ImportError:
     # Python < 2.5
     from elementtree import ElementTree
-import zc.ssl
 
 # ARB expects request parameters in a particular order
 REQUEST_KEY_ORDER = ("merchantAuthentication refId subscriptionId subscription name transactionKey "
@@ -63,10 +61,7 @@ class ARBConnection(object):
             server, port = self.server.split(':')
             conn = httplib.HTTPConnection(server, port)
         else:
-            cert_file = os.path.join(os.path.dirname(__file__), "certs.pem")
-            conn = zc.ssl.HTTPSConnection(self.server,
-                                          timeout=self.timeout,
-                                          cert_file=cert_file)
+            conn = httplib.HTTPSConnection(self.server, timeout=self.timeout)
         conn.putrequest('POST', '/xml/v1/request.api')
         conn.putheader('content-type', 'text/xml')
         conn.putheader('content-length', len(xml))

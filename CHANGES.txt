@@ -2,6 +2,14 @@
 CHANGES
 =======
 
+0.7 (unreleased)
+----------------
+
+- Stop using zc.ssl to verify TLS certificates,
+  because recent versions of Python do that by default.
+  This release should only be used with Python 2.7.9 or higher.
+  [davisagli]
+
 0.6.8 (2015-11-28)
 ------------------
 

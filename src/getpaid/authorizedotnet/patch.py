@@ -1,6 +1,4 @@
-import os.path
 import httplib
-import zc.ssl
 
 try:
     from zope.app.component.hooks import getSite
@@ -37,8 +35,7 @@ def sendTransaction(self, **kws):
         server, port = self.server.split(':')
         conn = httplib.HTTPConnection(server, port)
     else:
-        cert_file = os.path.join(os.path.dirname(__file__), "certs.pem")
-        conn = zc.ssl.HTTPSConnection(self.server, timeout=self.timeout, cert_file=cert_file)
+        conn = httplib.HTTPSConnection(self.server, timeout=self.timeout)
     conn.putrequest('POST', '/gateway/transact.dll')
     conn.putheader('content-type', 'application/x-www-form-urlencoded')
     conn.putheader('content-length', len(body))
